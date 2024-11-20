@@ -134,11 +134,41 @@ RUN apt-get update
 
 RUN mkdir -p $HOME/tf_ws/src
 ADD https://api.github.com/repos/alsora/ros2-tensorflow/git/refs/heads/master version.json
-RUN git clone https://github.com/alsora/ros2-tensorflow $HOME/tf_ws/src/ros2-tensorflow
+RUN git clone https://github.com/MinjunSong068/ros2-tensorflow $HOME/tf_ws/src/ros2-tensorflow
 WORKDIR $HOME/tf_ws
-RUN rosdep install --from-paths src --ignore-src --rosdistro foxy -y
-RUN /bin/bash -c 'source /opt/ros/foxy/setup.sh; \
-  colcon build'
+# RUN rosdep install --from-paths src --ignore-src -r
+
+RUN apt-get install -y ros-foxy-image-transport ros-foxy-vision-msgs \
+  && sudo apt-get install -y ros-foxy-derived-object-msgs ros-foxy-rmw-cyclonedds-cpp ros-foxy-sensor-msgs-py \
+  && sudo apt-get install -y ros-foxy-ament-cmake-python
+
+RUN apt-get install -y python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme
+
+# RUN source /opt/ros/foxy/setup.bash
+
+RUN apt-get update \
+  && apt-get upgrade -y
+
+RUN apt-get install -y cmake
+
+RUN . /opt/ros/foxy/setup.sh \
+  && rosdep update
+
+RUN mkdir -p rclpy_ws/src \
+  && cd rclpy_ws/src \
+  && . /opt/ros/foxy/setup.sh \
+  && git clone -b foxy https://github.com/ros2/rclpy.git \
+  && cd .. \
+  && colcon build --symlink-install
+
+RUN . /opt/ros/foxy/setup.sh \
+  && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
+  && colcon build
+# RUN /bin/bash -c 'source /opt/ros/foxy/setup.sh; \
+#   colcon build'
+
+# RUN ls /opt/ros/foxy && source /opt/ros/foxy/setup.sh
+# RUN colcon build
 
 #### SET ENVIRONMENT
 
