@@ -1,3 +1,4 @@
 {
-    "ros.distro": "humble"
+    "ros.distro": "humble",
+    "cmake.sourceDirectory": "C:/Users/mjson/OneDrive/바탕 화면/ros2-tensorflow/ros2-tensorflow/ros2_tensorflow"
 }
