@@ -2,6 +2,8 @@
 
 Use Tensorflow to load pretrained neural networks and perform inference through ROS2 interfaces.
 
+Modified for usage on nvidia jetson nano
+
 <img src="/data/detection.png" alt="Rviz2 detection output" width="50%" height="50%"/>
 The output can be directly visualized through Rviz
 

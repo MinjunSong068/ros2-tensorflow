@@ -1,7 +1,8 @@
 # @author Alberto Soragna (alberto dot soragna at gmail dot com)
 # @2018
 
-FROM osrf/ros:foxy-desktop
+#FROM arm64v8/ros:foxy
+FROM dustynv/ros:foxy-ros-core-l4t-r35.4.1
 LABEL maintainer="alberto dot soragna at gmail dot com"
 
 # working directory
@@ -14,8 +15,11 @@ ENV NVIDIA_VISIBLE_DEVICES \
 ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
+
+# RUN apt update
+
 # general utilities
-RUN apt-get update && apt-get install -y \
+RUN sudo apt-get update && apt-get install -y \
     wget \
     curl \
     git \
@@ -24,7 +28,8 @@ RUN apt-get update && apt-get install -y \
     nano \
     python-dev \
     python3-pip \
-    unzip
+    unzip \
+    apt-utils
 
 # pip
 RUN pip3 install --upgrade pip
@@ -32,12 +37,12 @@ RUN pip3 install --upgrade pip
 #### ROS2 SETUP
 
 # Locale options
-RUN apt-get install -y locales
+RUN sudo apt-get install -y locales
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 # install development tools and ROS tools
-RUN apt-get install -y \
+RUN sudo apt-get install -y \
   build-essential \
   cmake \
   python3-catkin-pkg-modules \
@@ -66,12 +71,12 @@ RUN pip3 install -U \
   setuptools
 
 # install Fast-RTPS dependencies
-RUN apt-get install --no-install-recommends -y \
+RUN sudo apt-get install --no-install-recommends -y \
   libasio-dev \
   libtinyxml2-dev
 
 # install CycloneDDS dependencies
-RUN apt-get install --no-install-recommends -y \
+RUN sudo apt-get install --no-install-recommends -y \
   libcunit1-dev
 
 #### TENSORFLOW
@@ -85,7 +90,7 @@ WORKDIR $HOME
 # tensorflow object detection dependencies from:
 # https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#install-prerequisites
 # https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md
-RUN apt-get install -y \
+RUN sudo apt-get install -y \
   protobuf-compiler \
   python-lxml \
   python-tk
@@ -130,7 +135,7 @@ RUN pip install tf_slim
 WORKDIR $HOME
 
 RUN rosdep update
-RUN apt-get update
+RUN sudo apt-get update
 
 RUN mkdir -p $HOME/tf_ws/src
 ADD https://api.github.com/repos/alsora/ros2-tensorflow/git/refs/heads/master version.json
@@ -138,7 +143,7 @@ RUN git clone https://github.com/MinjunSong068/ros2-tensorflow $HOME/tf_ws/src/r
 WORKDIR $HOME/tf_ws
 # RUN rosdep install --from-paths src --ignore-src -r
 
-RUN apt-get install -y ros-foxy-image-transport ros-foxy-vision-msgs \
+RUN sudo apt-get install -y ros-foxy-image-transport ros-foxy-vision-msgs \
   && sudo apt-get install -y ros-foxy-derived-object-msgs ros-foxy-rmw-cyclonedds-cpp ros-foxy-sensor-msgs-py \
   && sudo apt-get install -y ros-foxy-ament-cmake-python
 
@@ -146,10 +151,10 @@ RUN apt-get install -y python3-sphinx python3-sphinx-autodoc-typehints python3-s
 
 # RUN source /opt/ros/foxy/setup.bash
 
-RUN apt-get update \
-  && apt-get upgrade -y
+RUN sudo apt-get update \
+  && sudo apt-get upgrade -y
 
-RUN apt-get install -y cmake
+RUN sudo apt-get install -y cmake
 
 RUN . /opt/ros/foxy/setup.sh \
   && rosdep update
@@ -161,11 +166,19 @@ RUN mkdir -p rclpy_ws/src \
   && cd .. \
   && colcon build --symlink-install
 
+RUN sudo apt-get update \
+  && sudo apt-get install -y python3-pip pkg-config \
+  && sudo apt-get install -y libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran \
+  && sudo ln -s /usr/include/locale.h /usr/include/xlocale.h \
+  && sudo pip3 install --verbose 'protobuf<4' 'Cython<3' 
+  # && sudo wget --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/tensorflow/tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl \
+  # && sudo pip3 install --verbose tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
+
 RUN . /opt/ros/foxy/setup.sh \
   && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
   && colcon build
 # RUN /bin/bash -c 'source /opt/ros/foxy/setup.sh; \
-#   colcon build'
+#   colcon build
 
 # RUN ls /opt/ros/foxy && source /opt/ros/foxy/setup.sh
 # RUN colcon build
