@@ -1,0 +1,17 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from tf_interfaces/srv/ImageClassification.srv
+// generated code does not contain a copyright notice
+
+#include "sensor_msgs/msg/Image.idl"
+#include "vision_msgs/msg/Classification2D.idl"
+
+module tf_interfaces {
+  module srv {
+    struct ImageClassification_Request {
+      sensor_msgs::msg::Image image;
+    };
+    struct ImageClassification_Response {
+      vision_msgs::msg::Classification2D classification;
+    };
+  };
+};

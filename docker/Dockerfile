@@ -1,8 +1,8 @@
 # @author Alberto Soragna (alberto dot soragna at gmail dot com)
 # @2018
 
-#FROM arm64v8/ros:foxy
-FROM dustynv/ros:foxy-ros-core-l4t-r35.4.1
+FROM dustynv/ros:foxy-ros-core-l4t-r32.7.1
+
 LABEL maintainer="alberto dot soragna at gmail dot com"
 
 # working directory
@@ -10,11 +10,10 @@ ENV HOME /root
 WORKDIR $HOME
 
 # nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES \
-    ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES \
-    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
-
+#ENV NVIDIA_VISIBLE_DEVICES \
+#    ${NVIDIA_VISIBLE_DEVICES:-all}
+#ENV NVIDIA_DRIVER_CAPABILITIES \
+#    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 # RUN apt update
 
@@ -24,7 +23,6 @@ RUN sudo apt-get update && apt-get install -y \
     curl \
     git \
     gdb \
-    vim \
     nano \
     python-dev \
     python3-pip \
@@ -105,6 +103,7 @@ RUN pip install \
 # currently object detection is part of research models that are not available on releases, so we use master
 # TODO: check v2.20 WIP object detection https://github.com/tensorflow/models/tree/v2.2.0/official/vision/detection
 RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.8/dist-packages/tensorflow/models
+RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.6/dist-packages/tensorflow/models
 
 # protobuf compilation
 WORKDIR /usr/local/lib/python3.8/dist-packages/tensorflow/models/research
@@ -143,25 +142,27 @@ RUN git clone https://github.com/MinjunSong068/ros2-tensorflow $HOME/tf_ws/src/r
 WORKDIR $HOME/tf_ws
 # RUN rosdep install --from-paths src --ignore-src -r
 
-RUN sudo apt-get install -y ros-foxy-image-transport ros-foxy-vision-msgs \
-  && sudo apt-get install -y ros-foxy-derived-object-msgs ros-foxy-rmw-cyclonedds-cpp ros-foxy-sensor-msgs-py \
-  && sudo apt-get install -y ros-foxy-ament-cmake-python
+#RUN sudo apt-get install -y ros-foxy-image-transport ros-foxy-vision-msgs \
+#   ros-foxy-derived-object-msgs ros-foxy-rmw-cyclonedds-cpp ros-foxy-sensor-msgs-py \
+#   ros-foxy-ament-cmake-python
 
-RUN apt-get install -y python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme
+RUN pip3 install sphinx-autodoc-typehints sphinx-rtd-theme sphinx
 
-# RUN source /opt/ros/foxy/setup.bash
+#RUN apt-get install -y python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme
 
-RUN sudo apt-get update \
-  && sudo apt-get upgrade -y
+# RUN source /opt/ros/foxy/install/setup.bash
 
-RUN sudo apt-get install -y cmake
+#RUN sudo apt-get update \
+ # && sudo apt-get upgrade -y
 
-RUN . /opt/ros/foxy/setup.sh \
+#RUN sudo apt-get install -y cmake
+
+RUN . /opt/ros/foxy/install/setup.bash \
   && rosdep update
 
 RUN mkdir -p rclpy_ws/src \
   && cd rclpy_ws/src \
-  && . /opt/ros/foxy/setup.sh \
+  && . /opt/ros/foxy/install/setup.bash \
   && git clone -b foxy https://github.com/ros2/rclpy.git \
   && cd .. \
   && colcon build --symlink-install
@@ -174,26 +175,49 @@ RUN sudo apt-get update \
   # && sudo wget --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/tensorflow/tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl \
   # && sudo pip3 install --verbose tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
 
-RUN . /opt/ros/foxy/setup.sh \
+##Install tensorflow
+RUN pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow==2.3.1
+
+RUN export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
+
+#RUN pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow==1.15.4
+
+RUN sudo apt update \
+	&& sudo apt upgrade -y
+
+RUN . /opt/ros/foxy/install/setup.bash \
   && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
   && colcon build
 # RUN /bin/bash -c 'source /opt/ros/foxy/setup.sh; \
 #   colcon build
 
+#RUN pip3 install tensorflow-object-detection-api
+
 # RUN ls /opt/ros/foxy && source /opt/ros/foxy/setup.sh
 # RUN colcon build
+
+WORKDIR /usr/local/lib/python3.6/dist-packages/tensorflow/models/research
+RUN protoc object_detection/protos/*.proto --python_out=.
 
 #### SET ENVIRONMENT
 
 WORKDIR $HOME
 
-RUN echo ' \n\
-echo "Sourcing ROS2 packages..." \n\
-source /opt/ros/foxy/setup.sh \n\
-source $HOME/tf_ws/install/local_setup.sh' >> $HOME/.bashrc
+#RUN echo ' \n\
+#echo "Sourcing ROS2 packages..." \n\
+#source /opt/ros/foxy/install/setup.sh \n\
+#source $HOME/tf_ws/install/local_setup.sh' >> $HOME/.bashrc
 
-RUN echo ' \n\
-export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research' >> $HOME/.bashrc
+#RUN echo ' \n\
+#export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research' >> $HOME/.bashrc
 
-RUN echo ' \n\
-alias python="python3"' >> $HOME/.bashrc
+#RUN echo ' \n\
+#export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research' >> $HOME/.bashrc
+
+#RUN echo ' \n\
+#alias python="python3"' >> $HOME/.bashrc
+
+RUN echo "source /opt/ros/foxy/install/setup.sh" >> ~/.bashrc \
+	&& echo "source $HOME/tf_ws/install/local_setup.sh" >> ~/.bashrc \
+	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research" >> ~/.bashrc \
+	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research" >> ~/.bashrc

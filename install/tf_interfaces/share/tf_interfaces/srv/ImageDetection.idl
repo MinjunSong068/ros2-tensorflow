@@ -1,0 +1,17 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from tf_interfaces/srv/ImageDetection.srv
+// generated code does not contain a copyright notice
+
+#include "sensor_msgs/msg/Image.idl"
+#include "vision_msgs/msg/Detection2DArray.idl"
+
+module tf_interfaces {
+  module srv {
+    struct ImageDetection_Request {
+      sensor_msgs::msg::Image image;
+    };
+    struct ImageDetection_Response {
+      vision_msgs::msg::Detection2DArray detections;
+    };
+  };
+};

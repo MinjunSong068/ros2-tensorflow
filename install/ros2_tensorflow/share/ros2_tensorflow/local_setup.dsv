@@ -1,0 +1,2 @@
+source;share/ros2_tensorflow/environment/ament_prefix_path.sh
+source;share/ros2_tensorflow/environment/path.sh

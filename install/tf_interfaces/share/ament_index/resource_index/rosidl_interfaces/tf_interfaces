@@ -1,0 +1,8 @@
+srv/ImageClassification.idl
+srv/ImageClassification.srv
+srv/ImageClassification_Request.msg
+srv/ImageClassification_Response.msg
+srv/ImageDetection.idl
+srv/ImageDetection.srv
+srv/ImageDetection_Request.msg
+srv/ImageDetection_Response.msg
