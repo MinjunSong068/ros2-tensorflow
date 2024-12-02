@@ -92,6 +92,7 @@ RUN sudo apt-get install -y \
   protobuf-compiler \
   python-lxml \
   python-tk
+
 RUN pip install \
   Cython \
   contextlib2 \
@@ -102,11 +103,16 @@ RUN pip install \
 # get tensorflow models repository
 # currently object detection is part of research models that are not available on releases, so we use master
 # TODO: check v2.20 WIP object detection https://github.com/tensorflow/models/tree/v2.2.0/official/vision/detection
+
+##jetson nano runs on python3.6, just kept all the python3.8 stuff do be safe
 RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.8/dist-packages/tensorflow/models
 RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.6/dist-packages/tensorflow/models
 
 # protobuf compilation
 WORKDIR /usr/local/lib/python3.8/dist-packages/tensorflow/models/research
+RUN protoc object_detection/protos/*.proto --python_out=.
+
+WORKDIR /usr/local/lib/python3.6/dist-packages/tensorflow/models/research
 RUN protoc object_detection/protos/*.proto --python_out=.
 
 # Tensorflow-Slim (required for image segmentation)
@@ -155,8 +161,6 @@ RUN pip3 install sphinx-autodoc-typehints sphinx-rtd-theme sphinx
 #RUN sudo apt-get update \
  # && sudo apt-get upgrade -y
 
-#RUN sudo apt-get install -y cmake
-
 RUN . /opt/ros/foxy/install/setup.bash \
   && rosdep update
 
@@ -172,52 +176,33 @@ RUN sudo apt-get update \
   && sudo apt-get install -y libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran \
   && sudo ln -s /usr/include/locale.h /usr/include/xlocale.h \
   && sudo pip3 install --verbose 'protobuf<4' 'Cython<3' 
-  # && sudo wget --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/tensorflow/tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl \
-  # && sudo pip3 install --verbose tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
 
 ##Install tensorflow
 RUN pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow==2.3.1
 
 RUN export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
 
-#RUN pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow==1.15.4
-
 RUN sudo apt update \
 	&& sudo apt upgrade -y
+
+##image tools was installed by default with AMD64 but didn't seem to appear on ARM so build it manually
+RUN cd src \
+  && git clone -b foxy https://github.com/ros2/demos.git \
+  && cd .. \
+  && rosdep install --from-paths src --ignore-src -r -y \
+  && colcon build --packages-select image_tools
 
 RUN . /opt/ros/foxy/install/setup.bash \
   && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
   && colcon build
-# RUN /bin/bash -c 'source /opt/ros/foxy/setup.sh; \
-#   colcon build
-
-#RUN pip3 install tensorflow-object-detection-api
-
-# RUN ls /opt/ros/foxy && source /opt/ros/foxy/setup.sh
-# RUN colcon build
-
-WORKDIR /usr/local/lib/python3.6/dist-packages/tensorflow/models/research
-RUN protoc object_detection/protos/*.proto --python_out=.
 
 #### SET ENVIRONMENT
 
 WORKDIR $HOME
 
-#RUN echo ' \n\
-#echo "Sourcing ROS2 packages..." \n\
-#source /opt/ros/foxy/install/setup.sh \n\
-#source $HOME/tf_ws/install/local_setup.sh' >> $HOME/.bashrc
-
-#RUN echo ' \n\
-#export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research' >> $HOME/.bashrc
-
-#RUN echo ' \n\
-#export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research' >> $HOME/.bashrc
-
-#RUN echo ' \n\
-#alias python="python3"' >> $HOME/.bashrc
-
 RUN echo "source /opt/ros/foxy/install/setup.sh" >> ~/.bashrc \
 	&& echo "source $HOME/tf_ws/install/local_setup.sh" >> ~/.bashrc \
 	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research" >> ~/.bashrc \
-	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research" >> ~/.bashrc
+	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research" >> ~/.bashrc \
+  && echo "export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1" >> ~/.bashrc  
+  ##needed cause of this -> https://forums.developer.nvidia.com/t/error-importerror-usr-lib-aarch64-linux-gnu-libgomp-so-1-cannot-allocate-memory-in-static-tls-block-i-looked-through-available-threads-already/166494/4
