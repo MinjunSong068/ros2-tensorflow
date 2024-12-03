@@ -185,24 +185,25 @@ RUN export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
 RUN sudo apt update \
 	&& sudo apt upgrade -y
 
+RUN . /opt/ros/foxy/install/setup.bash \
+  && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
+  && colcon build
+
 ##image tools was installed by default with AMD64 but didn't seem to appear on ARM so build it manually
-RUN cd src \
+RUN . /install/setup.bash \
+  && cd src \
   && git clone -b foxy https://github.com/ros2/demos.git \
   && cd .. \
   && rosdep install --from-paths src --ignore-src -r -y \
   && colcon build --packages-select image_tools
-
-RUN . /opt/ros/foxy/install/setup.bash \
-  && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
-  && colcon build
 
 #### SET ENVIRONMENT
 
 WORKDIR $HOME
 
 RUN echo "source /opt/ros/foxy/install/setup.sh" >> ~/.bashrc \
-	&& echo "source $HOME/tf_ws/install/local_setup.sh" >> ~/.bashrc \
-	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research" >> ~/.bashrc \
-	&& echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research" >> ~/.bashrc \
+  && echo "source $HOME/tf_ws/install/local_setup.sh" >> ~/.bashrc \
+  && echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/tensorflow/models/research" >> ~/.bashrc \
+  && echo "export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research" >> ~/.bashrc \
   && echo "export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1" >> ~/.bashrc  
   ##needed cause of this -> https://forums.developer.nvidia.com/t/error-importerror-usr-lib-aarch64-linux-gnu-libgomp-so-1-cannot-allocate-memory-in-static-tls-block-i-looked-through-available-threads-already/166494/4
