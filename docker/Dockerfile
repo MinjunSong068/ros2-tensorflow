@@ -196,7 +196,9 @@ RUN . ./install/setup.bash \
   && git clone -b foxy https://github.com/ros2/demos.git \
   && git clone -b foxy https://github.com/ros2/rviz.git \
   && cd .. \
-  && colcon build
+  && colcon build --packages-select image_tools rviz2 rviz_assimp_vendor rviz_common rviz_default_plugins rviz_ogre_vendor rviz_rendering rviz_rendering_tests rviz_visual_testing_framework
+
+##TODO: get rqt working too
 
 #### SET ENVIRONMENT
 
