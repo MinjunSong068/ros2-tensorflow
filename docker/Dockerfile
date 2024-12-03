@@ -174,6 +174,7 @@ RUN mkdir -p rclpy_ws/src \
 RUN sudo apt-get update \
   && sudo apt-get install -y python3-pip pkg-config \
   && sudo apt-get install -y libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran \
+  && sudo apt-get install -y xorg-dev xaw3dg \
   && sudo ln -s /usr/include/locale.h /usr/include/xlocale.h \
   && sudo pip3 install --verbose 'protobuf<4' 'Cython<3' 
 
@@ -189,13 +190,13 @@ RUN . /opt/ros/foxy/install/setup.bash \
   && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
   && colcon build
 
-##image tools was installed by default with AMD64 but didn't seem to appear on ARM so build it manually
-RUN . /install/setup.bash \
+##image tools and rviz was installed by default with AMD64 but didn't seem to appear on ARM so build it manually
+RUN . ./install/setup.bash \
   && cd src \
   && git clone -b foxy https://github.com/ros2/demos.git \
+  && git clone -b foxy https://github.com/ros2/rviz.git \
   && cd .. \
-  && rosdep install --from-paths src --ignore-src -r -y \
-  && colcon build --packages-select image_tools
+  && colcon build
 
 #### SET ENVIRONMENT
 
