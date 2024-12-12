@@ -25,6 +25,7 @@ from adafruit_servokit import ServoKit
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
+
 class OpenCVNode(Node):
      
     def __init__(self):
@@ -61,32 +62,30 @@ class OpenCVNode(Node):
             area = cv2.contourArea(contour)
             x, y, w, h = cv2.boundingRect(contour)
         if area>=50:
-            #cv2.drawContours(frame,[cnt],0,(255,0,0),3)
             cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
-			objX=x+w/2
-			objY=y+h/2
-			errorPan=objX-self.width/2
-			errorTilt=objY-self.height/2
+            objX=x+w/2
+            objY=y+h/2
+            errorPan=objX-self.width/2
+            errorTilt=objY-self.height/2
         if abs(errorPan) > 15:
             pan = pan-errorPan/75
         if abs(errorTilt) > 15:
             tilt = tilt-errorTilt/75
 
         if pan>180:
-			pan=180
-			print("Pan Out of  Range")   
-		if pan<0:
-			pan=0
-			print("Pan Out of  Range") 
-		if tilt>180:
-			tilt=180
-			print("Tilt Out of  Range") 
-		if tilt<0:
-			tilt=0
-			print("Tilt Out of  Range")    
+            pan=180
+            print("Pan Out of  Range")   
+        if pan<0:
+            pan=0
+            print("Pan Out of  Range") 
+        if tilt>180:
+            tilt=180
+            print("Tilt Out of  Range") 
+        if tilt<0:
+            tilt=0
+            print("Tilt Out of  Range")    
         self.kit.servo[0].angle=pan
-		self.kit.servo[1].angle=tilt 
-		break   
+        self.kit.servo[1].angle=tilt 
 
 
     def servoInit():
@@ -141,34 +140,17 @@ class OpenCVNode(Node):
         #     kit.servo[1].angle=tilt 
         #     break   
 
-    def servocontrol(x,y):
-        kit = ServoKit(channels = 16,frequency = 100)
-        y_axis = kit.servo[1]
-        x_axis = kit.servo[0]
-        x_axis.set_pulse_width_range(750,2250)
-        y_axis.set_pulse_width_range(1400,2800)
-        # coordrange = range(0,801)
-        coordrange = range(0,2000)
-        x_range = np.linspace(104,72,len(coordrange))
-        y_range = np.linspace(146,93,len(coordrange))
-        xindex = coordrange.index(x)
-        yindex = coordrange.index(y)
-        x_axis.angle = x_range[xindex]
-        y_axis.angle = y_range[yindex]
-
-
-def main(args=None):
-    rclpy.init(args=args)
-    node = OpenCVNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
-        cv2.destroyAllWindows()
-
-
-if __name__ == '__main__':
-    main()
+    # def servocontrol(x,y):
+    #     kit = ServoKit(channels = 16,frequency = 100)
+    #     y_axis = kit.servo[1]
+    #     x_axis = kit.servo[0]
+    #     x_axis.set_pulse_width_range(750,2250)
+    #     y_axis.set_pulse_width_range(1400,2800)
+    #     # coordrange = range(0,801)
+    #     coordrange = range(0,2000)
+    #     x_range = np.linspace(104,72,len(coordrange))
+    #     y_range = np.linspace(146,93,len(coordrange))
+    #     xindex = coordrange.index(x)
+    #     yindex = coordrange.index(y)
+    #     x_axis.angle = x_range[xindex]
+    #     y_axis.angle = y_range[yindex]
