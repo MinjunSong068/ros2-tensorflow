@@ -96,7 +96,7 @@ class OpenCVNode(Node):
         kit.servo[1].angle=tilt
         return kit
 
-    def servocontrolCamMovement(kit):
+    # def servocontrolCamMovement(kit):
         
         # pan=90
         # tilt=45
