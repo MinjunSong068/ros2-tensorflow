@@ -32,7 +32,7 @@ class OpenCVNode(Node):
         super().__init__('box_node')
         self.bridge = CvBridge()
         self.width = cv2.VideoCapture(1).get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.height - cv2.VideoCapture(1).get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.height = cv2.VideoCapture(1).get(cv2.CAP_PROP_FRAME_HEIGHT)
         cv2.VideoCapture(1).release()
         self.kit = ServoKit(channels=16)
         self.pan = 120
@@ -72,20 +72,20 @@ class OpenCVNode(Node):
             if abs(errorTilt) > 15:
                 tilt = tilt-errorTilt/75
 
-            if pan>180:
-                pan=180
+            if self.pan>180:
+                self.pan=180
                 print("Pan Out of  Range")   
-            if pan<0:
-                pan=0
+            if self.pan<0:
+                self.pan=0
                 print("Pan Out of  Range") 
-            if tilt>180:
-                tilt=180
+            if self.tilt>180:
+                self.tilt=180
                 print("Tilt Out of  Range") 
-            if tilt<0:
-                tilt=0
+            if self.tilt<0:
+                self.tilt=0
                 print("Tilt Out of  Range")    
-            self.kit.servo[0].angle=pan
-            self.kit.servo[1].angle=tilt 
+            self.kit.servo[0].angle=self.pan
+            self.kit.servo[1].angle=self.tilt 
 
 
     def servoInit():
