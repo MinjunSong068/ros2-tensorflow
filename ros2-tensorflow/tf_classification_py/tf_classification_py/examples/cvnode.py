@@ -61,31 +61,31 @@ class OpenCVNode(Node):
         for contour in contours:
             area = cv2.contourArea(contour)
             x, y, w, h = cv2.boundingRect(contour)
-        if area>=50:
-            cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
-            objX=x+w/2
-            objY=y+h/2
-            errorPan=objX-self.width/2
-            errorTilt=objY-self.height/2
-        if abs(errorPan) > 15:
-            pan = pan-errorPan/75
-        if abs(errorTilt) > 15:
-            tilt = tilt-errorTilt/75
+            if area>=50:
+                cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
+                objX=x+w/2
+                objY=y+h/2
+                errorPan=objX-self.width/2
+                errorTilt=objY-self.height/2
+            if abs(errorPan) > 15:
+                pan = pan-errorPan/75
+            if abs(errorTilt) > 15:
+                tilt = tilt-errorTilt/75
 
-        if pan>180:
-            pan=180
-            print("Pan Out of  Range")   
-        if pan<0:
-            pan=0
-            print("Pan Out of  Range") 
-        if tilt>180:
-            tilt=180
-            print("Tilt Out of  Range") 
-        if tilt<0:
-            tilt=0
-            print("Tilt Out of  Range")    
-        self.kit.servo[0].angle=pan
-        self.kit.servo[1].angle=tilt 
+            if pan>180:
+                pan=180
+                print("Pan Out of  Range")   
+            if pan<0:
+                pan=0
+                print("Pan Out of  Range") 
+            if tilt>180:
+                tilt=180
+                print("Tilt Out of  Range") 
+            if tilt<0:
+                tilt=0
+                print("Tilt Out of  Range")    
+            self.kit.servo[0].angle=pan
+            self.kit.servo[1].angle=tilt 
 
 
     def servoInit():
