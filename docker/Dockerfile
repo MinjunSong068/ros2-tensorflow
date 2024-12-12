@@ -15,6 +15,10 @@ WORKDIR $HOME
 #ENV NVIDIA_DRIVER_CAPABILITIES \
 #    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
+# ##replace python3.6 with 3.8
+# RUN sudo apt-get remove python3.6 -y \
+#   sudo apt-get install -y python3.8
+
 # RUN apt update
 
 # general utilities
@@ -31,6 +35,12 @@ RUN sudo apt-get update && apt-get install -y \
 
 # pip
 RUN pip3 install --upgrade pip
+
+# # Replace python3.6 with python3.8
+
+# RUN sudo apt install python3.8 python3.8-dev -y
+# RUN sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+# RUN python -m pip install --upgrade pip
 
 #### ROS2 SETUP
 
@@ -50,7 +60,7 @@ RUN sudo apt-get install -y \
 
 # install python packages
 # specify a version of flake8 as the latest (3.8 is not compatible with ament)
-RUN pip3 install -U \
+RUN pip3 install -U --ignore-installed \
   argcomplete \
   flake8==3.7 \
   flake8-blind-except \
@@ -66,7 +76,7 @@ RUN pip3 install -U \
   pytest \
   pytest-cov \
   pytest-runner \
-  setuptools
+  setuptools 
 
 # install Fast-RTPS dependencies
 RUN sudo apt-get install --no-install-recommends -y \
@@ -88,12 +98,14 @@ WORKDIR $HOME
 # tensorflow object detection dependencies from:
 # https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#install-prerequisites
 # https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md
+RUN sudo apt-get install -y bash
+
 RUN sudo apt-get install -y \
   protobuf-compiler \
   python-lxml \
   python-tk
 
-RUN pip install \
+RUN pip install --ignore-installed \
   Cython \
   contextlib2 \
   jupyter \
@@ -104,13 +116,13 @@ RUN pip install \
 # currently object detection is part of research models that are not available on releases, so we use master
 # TODO: check v2.20 WIP object detection https://github.com/tensorflow/models/tree/v2.2.0/official/vision/detection
 
-##jetson nano runs on python3.6, just kept all the python3.8 stuff do be safe
-RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.8/dist-packages/tensorflow/models
+##jetson container defaults to python3.6, just kept all the python3.6 stuff do be safe
+# RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.8/dist-packages/tensorflow/models
 RUN git clone https://github.com/tensorflow/models.git /usr/local/lib/python3.6/dist-packages/tensorflow/models
 
 # protobuf compilation
-WORKDIR /usr/local/lib/python3.8/dist-packages/tensorflow/models/research
-RUN protoc object_detection/protos/*.proto --python_out=.
+# WORKDIR /usr/local/lib/python3.8/dist-packages/tensorflow/models/research
+# RUN protoc object_detection/protos/*.proto --python_out=.
 
 WORKDIR /usr/local/lib/python3.6/dist-packages/tensorflow/models/research
 RUN protoc object_detection/protos/*.proto --python_out=.
@@ -137,6 +149,8 @@ RUN pip install tf_slim
 
 ##### INSTALL ROS 2 TENSORFLOW
 
+RUN pip3 install distro
+
 WORKDIR $HOME
 
 RUN rosdep update
@@ -152,7 +166,7 @@ WORKDIR $HOME/tf_ws
 #   ros-foxy-derived-object-msgs ros-foxy-rmw-cyclonedds-cpp ros-foxy-sensor-msgs-py \
 #   ros-foxy-ament-cmake-python
 
-RUN pip3 install sphinx-autodoc-typehints sphinx-rtd-theme sphinx
+RUN pip3 install --ignore-installed sphinx-autodoc-typehints sphinx-rtd-theme sphinx cmake
 
 #RUN apt-get install -y python3-sphinx python3-sphinx-autodoc-typehints python3-sphinx-rtd-theme
 
@@ -174,14 +188,49 @@ RUN mkdir -p rclpy_ws/src \
 RUN sudo apt-get update \
   && sudo apt-get install -y python3-pip pkg-config \
   && sudo apt-get install -y libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran \
-  && sudo apt-get install -y xorg-dev xaw3dg \
   && sudo ln -s /usr/include/locale.h /usr/include/xlocale.h \
   && sudo pip3 install --verbose 'protobuf<4' 'Cython<3' 
 
+
 ##Install tensorflow
+
 RUN pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow==2.3.1
 
 RUN export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
+
+RUN pip3 install adafruit-blinka==3.3.4 \
+  adafruit-pureIO==1.0.4 \
+  Jetson.GPIO==2.0.4 \
+  adafruit-circuitpython-pca9685==3.2.5 \
+  adafruit-circuitpython-register==1.7.1 \
+  adafruit-circuitpython-servokit==1.1.0 \
+  adafruit-circuitpython-busdevice==4.3.0 \
+  adafruit-platformDetect==1.4.5 \
+  pyserial==3.4 \
+  pyusb==1.0.2 \
+  spidev==3.4 \
+  sysv-ipc==1.0.1
+
+# Adafruit-Blinka-6.15.0 -> 3.3.4
+# Adafruit-Circuitpython-ConnectionManager-3.1.2 
+# Adafruit-PlatformDetect-3.75.0 -> 1.4.5
+# Adafruit-PureIO-1.1.11 -> 1.0.4
+# Jetson.GPIO-2.1.6 -> 2.0.4
+# adafruit-circuitpython-busdevice-5.1.5 
+# adafruit-circuitpython-motor-3.3.5 -> 2.0.1
+# adafruit-circuitpython-pca9685-3.4.16 -> 3.2.5
+# adafruit-circuitpython-register-1.10.1 -> 1.7.1
+# adafruit-circuitpython-requests-4.1.8
+# adafruit-circuitpython-servokit-1.3.9 -> 1.1.0
+# adafruit-circuitpython-typing-1.10.1 
+# pyftdi-0.53.3 
+# pyserial-3.5 -> 3.4
+# pyusb-1.2.1 -> 1.0.2
+# spidev -> 3.4 
+# sysv-ipc -> 1.0.1
+# RUN pip3 install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v45 tensorflow==2.10.0
+
+
 
 RUN sudo apt update \
 	&& sudo apt upgrade -y
@@ -190,15 +239,20 @@ RUN . /opt/ros/foxy/install/setup.bash \
   && rosdep install --from-paths src --ignore-src --rosdistro foxy -y \
   && colcon build
 
-##image tools and rviz was installed by default with AMD64 but didn't seem to appear on ARM so build it manually
+RUN sudo apt-get install -y xaw3dg xorg-dev qtbase5-dev qtdeclarative5-dev
+
+##image tools was installed by default with AMD64 but didn't seem to appear on ARM so build it manually
 RUN . ./install/setup.bash \
   && cd src \
   && git clone -b foxy https://github.com/ros2/demos.git \
-  && git clone -b foxy https://github.com/ros2/rviz.git \
   && cd .. \
-  && colcon build --packages-select image_tools rviz2 rviz_assimp_vendor rviz_common rviz_default_plugins rviz_ogre_vendor rviz_rendering rviz_rendering_tests rviz_visual_testing_framework
+  && colcon build --packages-select image_tools
 
-##TODO: get rqt working too
+RUN . ./install/setup.bash \
+  && cd src \
+  && git clone -b foxy https://github.com/ros-perception/vision_opencv \
+  && cd .. \
+  && colcon build --symlink-install --packages-select cv_bridge image_geometry opencv_tests vision_opencv
 
 #### SET ENVIRONMENT
 
