@@ -33,7 +33,8 @@ setup(
     entry_points={
         'console_scripts': [
             'server = tf_classification_py.examples.server:main',
-            'client_test = tf_classification_py.examples.client_test:main'
+            'client_test = tf_classification_py.examples.client_test:main',
+            'opencv = tf_classification_py.examples.cvnodeExec:main' 
         ],
     },
 )
