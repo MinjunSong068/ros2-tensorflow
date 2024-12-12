@@ -157,5 +157,18 @@ class OpenCVNode(Node):
         y_axis.angle = y_range[yindex]
 
 
+def main(args=None):
+    rclpy.init(args=args)
+    node = OpenCVNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+        cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     main()
