@@ -24,6 +24,7 @@ import numpy as np
 from adafruit_servokit import ServoKit
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+from rclpy.node import Node
 
 
 class OpenCVNode(Node):

@@ -1,7 +1,7 @@
 import rclpy
 from ros2_tf_core import img_conversion as img_utils
 from ros2_tf_core.qos import qos_profile_vision_info
-import tensorflow as tf
+# import tensorflow as tf
 from tf_interfaces.srv import ImageClassification as ImageClassificationSrv
 from vision_msgs.msg import VisionInfo as VisionInfoMsg
 import cv2
@@ -9,6 +9,7 @@ import numpy as np
 from adafruit_servokit import ServoKit
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+import cvnode
 from cvnode import OpenCVNode
 
 
